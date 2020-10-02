@@ -1,0 +1,26 @@
+{
+  "name": "strava-print",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@turf/turf": "^5.1.6",
+    "dateformat": "^3.0.3",
+    "dotenv": "^8.2.0",
+    "google-polyline": "^1.0.3",
+    "jimp": "^0.16.1",
+    "latlon_to_xy": "^1.0.3",
+    "mercator-projection": "0.0.2",
+    "node-fetch": "^2.6.1",
+    "paper-jsdom": "^0.12.11",
+    "pretty-ms": "^7.0.1",
+    "simple-json-db": "^1.2.2",
+    "strava-v3": "^2.0.6",
+    "util": "^0.12.3"
+  }
+}
