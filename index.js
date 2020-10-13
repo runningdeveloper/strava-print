@@ -52,13 +52,14 @@ const getLastActivities = async () => {
   return activities;
 };
 
-const makeSharpImage = (image, distance, date, time, route) => {
+const makeSharpImage = async (image, distance, date, time, route) => {
   const routeSvg = Buffer.from(`<svg viewBox="-2 0 160 160">${route}</svg>`);
 
   const svgText = Buffer.from(`<svg height="300" width="300"> 
   <text x="160" y="40" font-weight="bold" font-size="20" fill="#000" font-family="Tahoma, Verdana, Segoe, sans-serif">${distance}</text>
   <text x="20" y="190" font-weight="bold" font-size="20" fill="#000" font-family="Tahoma, Verdana, Segoe, sans-serif">${time}</text>
   <text x="20" y="220" font-weight="bold" font-size="20" fill="#000" font-family="Tahoma, Verdana, Segoe, sans-serif">${date}</text>
+  <text x="20" y="295" font-size="20" fill="#000" font-family="Tahoma, Verdana, Segoe, sans-serif">.</text>
 
   </svg>`);
 
@@ -68,9 +69,7 @@ const makeSharpImage = (image, distance, date, time, route) => {
       { input: routeSvg, top: 60, left: 160, blend: "over" },
       { input: svgText, gravity: sharp.gravity.northwest, blend: "over" },
     ])
-    .toFile("result.png", (err, info) => {
-      console.log("done image", err, info);
-    });
+    .toFile("result.png");
 };
 
 (async function() {
