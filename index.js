@@ -146,8 +146,8 @@ function makeRoutePath(route) {
     Math.abs(xyBbox[1].x - xyBbox[0].x) / Math.abs(xyBbox[1].y - xyBbox[0].y);
 
   const mappedXY = xyPlot.map((a) => ({
-    x: mapRange([xyBbox[0].x, xyBbox[1].x], [0, squareSize * aspect], a.x),
-    y: mapRange([xyBbox[1].y, xyBbox[0].y], [0, squareSize], a.y),
+    x: mapRange([xyBbox[0].x, xyBbox[1].x], [0, squareSize * ( aspect>1 ? 1 : aspect)], a.x),
+    y: mapRange([xyBbox[1].y, xyBbox[0].y], [0, squareSize * ( aspect>1 ? 1/aspect : 1)], a.y),
   }));
 
   paper.setup(new paper.Size(squareSize, squareSize));
