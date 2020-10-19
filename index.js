@@ -89,9 +89,9 @@ const makeSharpImage = async (image, distance, date, time, route) => {
     let runImage = null;
     if (lastActivity.type === "Run") {
       runImage = __dirname + "/templates/run.png";
-    } else if (lastActivity.type === "Walk") {
+    } else if (lastActivity.type === "Walk" || lastActivity.type === "Hike") {
       runImage = __dirname + "/templates/walk.png";
-    } else if (lastActivity.type === "Cycle") {
+    } else if (lastActivity.type === "Cycle" || lastActivity.type === "Ride") {
       runImage = __dirname + "/templates/cycle.png";
     } else {
       console.log("unkown type");
@@ -145,8 +145,12 @@ function makeRoutePath(route) {
   const aspect =
     Math.abs(xyBbox[1].x - xyBbox[0].x) / Math.abs(xyBbox[1].y - xyBbox[0].y);
 
+  // may need to do this for y also
+  const halfAspectX = squareSize * ( aspect>1 ? 1 : aspect)/2;
+  const xStart = (squareSize/2) - halfAspectX;
+
   const mappedXY = xyPlot.map((a) => ({
-    x: mapRange([xyBbox[0].x, xyBbox[1].x], [0, squareSize * ( aspect>1 ? 1 : aspect)], a.x),
+    x: mapRange([xyBbox[0].x, xyBbox[1].x], [0, squareSize * ( aspect>1 ? 1 : aspect)], a.x) + xStart,
     y: mapRange([xyBbox[1].y, xyBbox[0].y], [0, squareSize * ( aspect>1 ? 1/aspect : 1)], a.y),
   }));
 
