@@ -24,7 +24,7 @@ strava.config({
 
 const refreshToken = process.env.STRAVA_REFRESH_TOKEN;
 
-const getLastActivities = async () => {
+const getLastActivities = async (amount=5) => {
   // try get the activities otherwise get it with the refresh token
 
   const stravaToken = db.get("strava");
@@ -33,7 +33,7 @@ const getLastActivities = async () => {
   try {
     activities = await strava.athlete.listActivities({
       access_token: stravaToken,
-      per_page: 5,
+      per_page: amount,
       page: 1,
     });
   } catch (error) {
@@ -46,6 +46,33 @@ const getLastActivities = async () => {
         per_page: 5,
         page: 1,
       });
+    }
+  }
+
+  return activities;
+};
+
+const getActivityFromId = async (id) => {
+  // try get the activities otherwise get it with the refresh token
+
+  const stravaToken = db.get("strava");
+
+  let activities = [];
+  try {
+    activities = [await strava.activities.get({
+      access_token: stravaToken,
+      id,
+    })];
+  } catch (error) {
+    console.log({error})
+    if (error.statusCode === 401) {
+      // assume this is token expire so lets get a new one and try again
+      const newToken = await strava.oauth.refreshToken(refreshToken);
+      db.set("strava", newToken.access_token);
+      activities = [await strava.activities.get({
+        access_token: newToken.access_token,
+        id
+      })];
     }
   }
 
@@ -72,6 +99,7 @@ const makeSharpImage = async (image, distance, date, time, route) => {
     .toFile("result.png");
 };
 
+// normal function to get latest activity
 (async function() {
   // makeSharpImage(__dirname + "/templates/run.png", '20 km', dateFormat(new Date(), "dd mmm yyyy"), prettyMilliseconds(234533 * 1000))
   // return
@@ -119,6 +147,111 @@ const makeSharpImage = async (image, distance, date, time, route) => {
     console.log("not need to print");
   }
 })();
+
+async function asyncForEach(array, callback) {
+  for (let index = 0; index < array.length; index++) {
+    await callback(array[index], index, array);
+  }
+}
+const waitFor = (ms) => new Promise(r => setTimeout(r, ms));
+
+
+// for a bunch of activities
+// (async function() {
+//   // makeSharpImage(__dirname + "/templates/run.png", '20 km', dateFormat(new Date(), "dd mmm yyyy"), prettyMilliseconds(234533 * 1000))
+//   // return
+//   const activities = await getLastActivities(22);
+
+//   console.log({ activities });
+
+//   asyncForEach(activities, async (lastActivity) => {
+
+//     let runImage = null;
+//     if (lastActivity.type === "Run") {
+//       runImage = __dirname + "/templates/run.png";
+//     } else if (lastActivity.type === "Walk" || lastActivity.type === "Hike") {
+//       runImage = __dirname + "/templates/walk.png";
+//     } else if (lastActivity.type === "Cycle" || lastActivity.type === "Ride") {
+//       runImage = __dirname + "/templates/cycle.png";
+//     } else {
+//       console.log("unkown type");
+//       db.set("last", lastActivity.id);
+//       return;
+//     }
+
+//     const routeSvg = makeRoutePath(lastActivity.map.summary_polyline);
+
+//     await makeSharpImage(
+//       runImage,
+//       `${(lastActivity.distance / 1000).toFixed(1)} km`,
+//       `${dateFormat(new Date(lastActivity.start_date_local), "dd mmm yyyy")}`,
+//       `${prettyMilliseconds(lastActivity.moving_time * 1000)}`,
+//       routeSvg
+//     );
+
+//     db.set("last", lastActivity.id);
+
+//     const { stdout, stderr } = await exec(
+//       "lp -d PP-9000 -o fit-to-page result.png"
+//     );
+//     console.log({ stdout });
+
+//     await waitFor(1000)
+
+//   })
+
+ 
+// })();
+
+// get a single activity
+// (async function() {
+
+//   const activityId = process.argv.slice(2)[0];
+//   // will probably crash here if you don't add the id
+
+//   const activities = await getActivityFromId(activityId);
+
+//   console.log({ activities });
+
+//   asyncForEach(activities, async (lastActivity) => {
+
+//     let runImage = null;
+//     if (lastActivity.type === "Run") {
+//       runImage = __dirname + "/templates/run.png";
+//     } else if (lastActivity.type === "Walk" || lastActivity.type === "Hike") {
+//       runImage = __dirname + "/templates/walk.png";
+//     } else if (lastActivity.type === "Cycle" || lastActivity.type === "Ride") {
+//       runImage = __dirname + "/templates/cycle.png";
+//     } else {
+//       console.log("unkown type");
+//       db.set("last", lastActivity.id);
+//       return;
+//     }
+
+//     const routeSvg = makeRoutePath(lastActivity.map.summary_polyline);
+
+//     await makeSharpImage(
+//       runImage,
+//       `${(lastActivity.distance / 1000).toFixed(1)} km`,
+//       `${dateFormat(new Date(lastActivity.start_date_local), "dd mmm yyyy")}`,
+//       `${prettyMilliseconds(lastActivity.moving_time * 1000)}`,
+//       routeSvg
+//     );
+
+//     db.set("last", lastActivity.id);
+
+//     const { stdout, stderr } = await exec(
+//       "lp -d PP-9000 -o fit-to-page result.png"
+//     );
+//     console.log({ stdout });
+
+//     await waitFor(1000)
+
+//   })
+
+ 
+// })();
+
 
 function makeRoutePath(route) {
   const decodedPoly = polyline.decode(route.replace(/\\\\/g, "\\"));
